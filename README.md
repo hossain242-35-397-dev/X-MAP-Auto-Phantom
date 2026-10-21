@@ -41,3 +41,74 @@ Open your terminal and run:
 ```bash
 git clone https://github.com/hossain242-35-397-dev/X-MAP-Auto-Phantom.git
 cd X-MAP-Auto-Phantom
+
+
+
+
+
+
+
+Step 2: Run the Automated Installer
+This command will install all required dependencies (Apache, Hostapd, Dnsmasq, etc.) and set up the captive portal:
+
+bash
+chmod +x install.sh
+sudo ./install.sh
+Step 3: Launch the Attack Tool
+Once the installation is complete, start the tool:
+
+bash
+chmod +x phantom.sh
+sudo ./phantom.sh
+🎮 How to Use (Step-by-Step Guide)
+After launching the script, follow the on-screen prompts:
+
+1. Select Scan Band:
+
+Enter 1 for 2.4 GHz.
+
+Enter 2 for 5 GHz.
+
+Enter 3 for Both.
+
+2. Select Target Network:
+
+Wait for the scan to finish. A table will show available Wi-Fi networks.
+
+Enter the target number (e.g., 1, 2, 3) to lock the target.
+
+3. Select Attack Strategy:
+
+The tool will scan for connected devices.
+
+Enter 1 to attack specific devices (e.g., 1 3).
+
+Enter 2 to attack ALL devices on that network (Broadcast).
+
+4. The Attack Loop:
+
+The script will automatically loop between 20 seconds of Deauth (disconnecting victims) and 20 seconds of Fake AP (hosting the fake Wi-Fi).
+
+🔑 How to Check Captured Passwords
+When the victim enters their password on the fake page, it is saved locally.
+
+To view the passwords:
+Keep the attack running, open a new terminal window, and type:
+
+bash
+cat /var/www/html/creds.txt
+You will see the victim's IP, the Router name, and their Password.
+
+⚠️ If the victim doesn't see the page:
+Tell them to open their mobile browser and go to http://neverssl.com or http://10.0.0.1 (Must be HTTP, not HTTPS).
+
+🚨 Troubleshooting
+Error: Port 80 already in use
+If you have Docker running, it might conflict with Apache. Stop Docker first:
+sudo systemctl stop docker
+
+No networks found during scan?
+Unplug and replug your external Wi-Fi adapter. Ensure it is in Monitor Mode. Check if it is named wlan1.
+
+My adapter is not named wlan1:
+Open phantom.sh using nano, and replace all instances of wlan1 with your actual adapter name (e.g., wlan0).
