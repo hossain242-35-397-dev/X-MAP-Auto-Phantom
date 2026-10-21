@@ -39,7 +39,10 @@ Follow these steps on a fresh Kali Linux machine:
 ### Step 1: Clone the Repository
 Open your terminal and run:
 ```bash
-git clone https://github.com/hossain242-35-397-dev/X-MAP-Auto-Phantom.git
+
+
+
+Step 1: git clone https://github.com/hossain242-35-397-dev/X-MAP-Auto-Phantom.git
 cd X-MAP-Auto-Phantom
 
 
