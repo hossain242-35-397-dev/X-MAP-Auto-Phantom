@@ -1,3 +1,7 @@
+****"This tool is for educational purposes only. Do not use it on networks you do not own. The developer is not responsible for any misuse or damage."**
+
+
+
 # X-MAP-Auto-Phantom
 An automated, cinematic Evil Twin attack framework for wireless penetration testing (2.4GHz &amp; 5GHz) with Captive Portal credential harvesting.
 
@@ -11,7 +15,6 @@ Welcome! **X-MAP** is an automated wireless hacking tool built for Kali Linux to
 > ⚠️ **DISCLAIMER:** This tool is strictly for **educational purposes and authorized lab environments only**. Using this against networks you do not own or have explicit permission to test is illegal and strictly prohibited.
 
 ---
-
 ## ✨ Features
 
 *   **2.4GHz & 5GHz Scanning:** Choose to scan only 2.4G, only 5G, or both simultaneously.
@@ -20,7 +23,14 @@ Welcome! **X-MAP** is an automated wireless hacking tool built for Kali Linux to
 *   **Smart Fake AP:** Automatically detects if the target is 2.4GHz or 5GHz and configures the fake AP (`hostapd`) accordingly.
 *   **Captive Portal Trap:** Victims are presented with a fake login page to capture their Wi-Fi passwords.
 *   **Cinematic UI:** A premium, neon-themed hacker terminal interface with colored logs.
-
+*   **Ghost Mode (Stealth):** Automatically randomizes the MAC address and blocks external pings/ports to keep the attacker invisible.
+*   **Auto Channel Locking:** Scans all channels, then locks the adapter to the target's specific channel for accurate victim sniffing.
+*   **Sequential Attack Loop:** Automatically cycles between Deauth attacks and Fake AP broadcasting to force victims to reconnect.
+*   **Hidden SSID Filtering:** Skips hidden networks during the scan to keep the target list clean and organized.
+*   **Signal Strength Bars:** Visually displays target signal strength using dynamic terminal bars (▂▄▆█).
+*   **Traffic Hijacking (NAT):** Uses `iptables` to redirect all HTTP/HTTPS traffic to the fake captive portal.
+*   **Auto-Cleanup:** Kills lingering processes and flushes firewall rules at startup to prevent "Resource Busy" errors.
+*   **Dynamic Hardware Mode:** Automatically configures `hostapd` for 2.4GHz (`g`) or 5GHz (`a`) based on the target channel.
 ---
 
 ## 🛠️ Prerequisites (What You Need)
